@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personnel Pass Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-top: 15px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    input, select, button {
+      font-size: 14px;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    input:focus, select:focus, button:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .error {
+      color: red;
+      font-size: 12px;
+    }
+    .obDetail {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .obDetailInput {
+      flex: 1;
+      margin-right: 10px;
+    }
+    .removeButton {
+      background: #dc3545;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .removeButton:hover {
+      background: #a71d2a;
+    }
+    #responseMessage {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    footer {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 3px;
+      background-color: width;
+      color: white;
+    }
+    footer {
+      display: block;
+    }
+
+ /* Spinner styling */
+      .spinner {
+        display: none;
+        width: 30px;
+        height: 30px;
+        border: 4px solid rgba(0, 0, 0, 0.2);
+        border-top-color: #000;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 10px auto;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Disabled button styling */
+      .disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Personnel Pass Form</h2>
+    <form id="personnelForm">
+      <label for="fname">Full Name: <sup>*</sup></label> 
+      <input type="text" id="fname" name="fname" placeholder="Enter your full name" required>
+      <span id="fnameError" class="error"></span>
+
+      <label for="oborpb">Type of Pass (OB/PB):</label>
+        <select id="oborpb" name="oborpb" required onchange="handlePassTypeChange()">
+          <option value="">--Select Type of Pass--</option>
+          <option value="OB">Official Business</option>
+          <option value="PB">Personal Business</option>
+        </select>
+
+      <span id="oborpbError" class="error"></span>
+
+    <div id="obDetailsContainer" style="display: none;">
+      <label>Official Business Details:</label>
+      <div id="obDetails">
+        
+        <div class="obDetail">
+          <input type="text" name="obDetail[]" placeholder="Enter Destination Details" class="obDetailInput">
+          <input type="text" name="obPurpose[]" placeholder="Enter Specific Purpose" class="obPurposeInput">
+          <button type="button" class="removeButton" onclick="this.parentNode.remove()">🗑️</button>
+        </div>
+      </div>
+       <button type="button" onclick="addOBDetail()">➕ Add more </button>
+    </div>
+
+      <label for="unit">Unit<sup>*</sup></label>
+        <select id="unit" name="unit" required>
+          <option value="">--Select Unit--</option>
+          <option value="ADM">ADM</option>
+          <option value="PRO">PRO</option>
+          <option value="STAT">STAT</option>
+          <option value="CRS">CRS</option>
+        </select>
+      <span id="unitError" class="error"></span>
+
+      <label for="purpose">Purpose:</label>
+
+      <input type="text" id="purpose" name="purpose" placeholder="State your purpose" required>
+      <span id="purposeError" class="error"></span>
+
+      <label for="employeeid">Employee ID:</label>
+      <input type="text" id="employeeid" name="employeeid" placeholder="Enter your Employee ID" required>
+      <span id="employeeidError" class="error"></span>
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+      <span id="emailError" class="error"></span>
+
+      <label for="date">Date:</label>
+      <input type="date" id="date" name="date" required>
+      <span id="dateError" class="error"></span>
+
+      <button id="submitButton" type="button" onclick="submitData()">Submit</button>
+      <div id="spinner" class="spinner"></div> </div>
+      <div id="responseMessage"></div>
+    </form>
+  </div>
+
+  <footer>
+    <p>Powered by <a href="#">™ BibohThings</a>. This system is provided exclusively for PSA Palawan and not intended for sale.</p>
+  </footer>
+
+  <script>
+  function handlePassTypeChange() {
+    const obDetailsContainer = document.getElementById('obDetailsContainer');
+    const passType = document.getElementById('oborpb').value;
+    console.log("Pass Type Selected:", passType);
+    obDetailsContainer.style.display = passType === 'OB' ? 'block' : 'none';
+    }
+
+  function addOBDetail() {
+    const obDetails = document.getElementById('obDetails');
+    const detailDiv = document.createElement('div');
+    detailDiv.classList.add('obDetail');
+
+    // Create Destination Details input
+    const destinationInput = document.createElement('input');
+    destinationInput.type = 'text';
+    destinationInput.name = 'obDetail[]';
+    destinationInput.placeholder = 'Enter Destination Details';
+    destinationInput.classList.add('obDetailInput');
+     destinationInput.addEventListener('input', function () {
+    this.value = this.value.toUpperCase();
+    });
+
+    // Create Specific Purpose input
+    const purposeInput = document.createElement('input');
+    purposeInput.type = 'text';
+    purposeInput.name = 'obPurpose[]';
+    purposeInput.placeholder = 'Enter Specific Purpose';
+    purposeInput.classList.add('obPurposeInput');
+    purposeInput.addEventListener('input', function () {
+    this.value = this.value.toUpperCase();
+    });
+
+    // Create Remove Button
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.classList.add('removeButton');
+    removeButton.textContent = '🗑️';
+    removeButton.onclick = () => detailDiv.remove();
+
+    // Append inputs and button to the div
+    detailDiv.appendChild(destinationInput);
+    detailDiv.appendChild(purposeInput);
+    detailDiv.appendChild(removeButton);
+
+    // Append the new detailDiv to the container
+    obDetails.appendChild(detailDiv);
+  }
+
+  function submitData() {
+    const submitButton = document.getElementById('submitButton');
+    const spinner = document.getElementById('spinner');
+    submitButton.disabled = true;
+    spinner.style.display = 'block';
+    document.getElementById('responseMessage').innerText = '';
+
+    const fullName = document.getElementById('fname').value;
+    const typeOfPass = document.getElementById('oborpb').value;
+    const purpose = document.getElementById('purpose').value;
+    const unit = document.getElementById('unit').value;
+    const employeeId = document.getElementById('employeeid').value;
+    const email = document.getElementById('email').value;
+    const date = document.getElementById('date').value;
+
+    const obDetails = Array.from(document.querySelectorAll('.obDetailInput')).map(input => input.value.trim());
+    const obPurposes = Array.from(document.querySelectorAll('.obPurposeInput')).map(input => input.value.trim());
+
+    if (!fullName || !typeOfPass || !purpose || !unit || !employeeId || !email || !date) {
+      alert('Please fill all required fields.');
+      submitButton.disabled = false;
+      spinner.style.display = 'none';
+      return;
+    }
+
+    if (typeOfPass === 'OB') {
+      if (obDetails.length === 0 || obPurposes.length === 0 || obDetails.some(detail => !detail) || obPurposes.some(purpose => !purpose)) {
+        alert('Please provide all destination details and specific purposes for Official Business.');
+        submitButton.disabled = false;
+        spinner.style.display = 'none';
+        return;
+      }
+    }
+
+    // Combine destination and purpose details
+    const combinedOBDetails = obDetails.map((detail, index) => `${detail} : ${obPurposes[index]}`);
+
+    google.script.run
+      .withSuccessHandler(function(entryNumber) {
+        document.getElementById('responseMessage').innerText =
+          'Personnel Pass submitted successfully! Entry Number: ' + entryNumber;
+        document.getElementById('personnelForm').reset();
+        document.getElementById('obDetailsContainer').style.display = 'none';
+        submitButton.disabled = false;
+        spinner.style.display = 'none';
+      })
+      .withFailureHandler(function(error) {
+        document.getElementById('responseMessage').innerText = 'Error: ' + error.message;
+        submitButton.disabled = false;
+        spinner.style.display = 'none';
+      })
+      .submitPass(fullName, typeOfPass, purpose, unit, employeeId, email, date, obDetails, obPurposes, combinedOBDetails); // Pass combinedOBDetails instead of obPurposes
+  }
+
+
+  function handleSubmit(event) {
+          event.preventDefault(); // Prevent the default form submission behavior
+
+          const submitButton = document.getElementById("submitButton");
+          const spinner = document.getElementById("spinner");
+
+          // Disable the submit button and show the spinner
+          submitButton.classList.add("disabled");
+          spinner.style.display = "block";
+
+          // Collect form data
+          const formData = new FormData(document.getElementById("submitForm"));
+          const payload = {};
+          formData.forEach((value, key) => {
+            payload[key] = value;
+          });
+
+          // Call the Apps Script function
+          google.script.run
+            .withSuccessHandler(() => {
+              alert("Form submitted successfully!");
+              submitButton.classList.remove("disabled");
+              spinner.style.display = "none";
+              document.getElementById("submitForm").reset(); // Reset the form
+            })
+            .withFailureHandler((error) => {
+              alert(`Error: ${error.message}`);
+              submitButton.classList.remove("disabled");
+              spinner.style.display = "none";
+            })
+            .processFormData(payload);    
+    }
+
+     document.querySelectorAll('input[type="text"], textarea').forEach(input => {
+     input.addEventListener('input', function () {
+      // Check if the current field is not the email input
+      if (this.type !== 'email') {
+        this.value = this.value.toUpperCase();
+      }
+    });
+  });
+
+  </script>
+
+</body>
+</html>
+
+
